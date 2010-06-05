@@ -1,0 +1,5 @@
+# This is an example file. Write your own and put it in config/doctrine_cache_invalider.yml
+# Please see README for further documentation
+Article:
+  uris:
+    MyContent/index?sf_culture=*: main

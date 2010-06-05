@@ -1,0 +1,4 @@
+config/doctrine_cache_invalider.yml:
+  class: sfSimpleYamlConfigHandler
+  param:
+    prefix: ak_
