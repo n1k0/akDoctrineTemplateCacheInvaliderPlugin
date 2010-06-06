@@ -2,7 +2,7 @@
 
 if (!isset($_SERVER['SYMFONY']))
 {
-  throw new RuntimeException('Could not find symfony core libraries.');
+  $_SERVER['SYMFONY'] = '/Users/niko/Sites/vendor/symfony/1.4/lib';
 }
 
 require_once $_SERVER['SYMFONY'].'/autoload/sfCoreAutoload.class.php';
@@ -12,7 +12,10 @@ class ProjectConfiguration extends sfProjectConfiguration
 {
   public function setup()
   {
-    $this->setPlugins(array('akDoctrineTemplateCacheInvaliderPlugin'));
+    $this->setPlugins(array(
+      'sfDoctrinePlugin',
+      'akDoctrineTemplateCacheInvaliderPlugin',
+    ));
     $this->setPluginPath('akDoctrineTemplateCacheInvaliderPlugin', dirname(__FILE__).'/../../../..');
   }
 }

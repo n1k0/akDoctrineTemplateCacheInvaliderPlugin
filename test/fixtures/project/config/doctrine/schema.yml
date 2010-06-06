@@ -1,0 +1,31 @@
+Article:
+  actAs:
+    I18n:
+      fields: [title, content, slug]
+      actAs:
+        Sluggable:
+          fields:    [title]
+          uniqueBy:  [lang, title]
+          canUpdate: false
+  columns:
+    title: string(255)
+    content: string(5000)
+  relations:
+    Comments:
+      type: many
+      local: id
+      foreign: article_id
+      onDelete: CASCADE
+
+Comment:
+  columns:
+    article_id: integer
+    author: string(255)
+    content: string(5000)
+  relations:
+    Article:
+      type: one
+      local: article_id
+      foreign: id
+      foreignAlias: Comments
+      onDelete: CASCADE

@@ -1,0 +1,5 @@
+all:
+  doctrine:
+    class: sfDoctrineDatabase
+    param:
+      dsn: "sqlite:///<?php echo dirname(__FILE__) ?>/../data/db.sqlite"

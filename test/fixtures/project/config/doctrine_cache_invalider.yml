@@ -1,0 +1,7 @@
+Article:
+  uris:
+    content/index?sf_culture=*:                       frontend
+    content/article?sf_culture=*&slug=%slug%:         frontend
+Comment:
+  uris:
+    content/article?sf_culture=*&slug=%Article.slug%: frontend

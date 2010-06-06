@@ -1,0 +1,21 @@
+comment:
+  class: sfDoctrineRouteCollection
+  options:
+    model:                Comment
+    module:               comment
+    prefix_path:          /comment
+    column:               id
+    with_wildcard_routes: true
+
+article:
+  class: sfDoctrineRouteCollection
+  options:
+    model:                Article
+    module:               article
+    prefix_path:          /article
+    column:               id
+    with_wildcard_routes: true
+
+homepage:
+  url:   /
+  param: { module: default, action: index }

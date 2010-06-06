@@ -3,9 +3,8 @@
 
 prod:
   .settings:
-    no_script_name:         off
+    no_script_name:         true
     logging_enabled:        false
-    cache:                  true
 
 dev:
   .settings:
@@ -18,7 +17,7 @@ dev:
 test:
   .settings:
     error_reporting:        <?php echo ((E_ALL | E_STRICT) ^ E_NOTICE)."\n" ?>
-    cache:                  true
+    cache:                  false
     web_debug:              false
     no_script_name:         false
     etag:                   false
@@ -26,15 +25,11 @@ test:
 all:
   .settings:
     # Form security secret (CSRF protection)
-    csrf_secret:            akDoctrineTemplateCacheInvaliderPlugin
+    csrf_secret:            0ae6137c902da4292053a35bc8014440d4669e45
 
     # Output escaping settings
-    escaping_strategy:      on
+    escaping_strategy:      true
     escaping_method:        ESC_SPECIALCHARS
 
     # Enable the database manager
     use_database:           true
-    
-    default_culture:	      en 
-    i18n:	                  true
-    standard_helpers:       [Text, I18N, Tag, Url, Asset, Cache]

@@ -25,9 +25,24 @@ Create a `doctrine_cache_invalider.yml` file in the `config` folder of your proj
       uris:
         MyContent/article?sf_culture=*&slug=%article_slug%: frontend
 
-As you can see, you define template cache uris by their internal Symfony one, plus you define the application name where the cache is used, eg. `frontend`.
+As you can see, you define template cache uris by their internal Symfony one, plus you define the application name where the cache is used, eg. `frontend`. This is especially useful if you work with a `backend` application and want your `frontend` templates cache files to be invalidated on related record updated.
 
-Also note the `%field_name%`-like parameters, they're just placeholder and will be replaced by the field (yes, the column) value of the model instance which is being created or updated. And i18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
+You can also define several applications where the cache uris are used, for example if you share some templates accross applications:
+
+    Article:
+      uris:
+        MyContent/index?sf_culture=*: [frontend, otherapp]
+        MyContent/article?sf_culture=*&slug=%slug%: [frontend, otherapp]
+    Comment:
+      uris:
+        MyContent/article?sf_culture=*&slug=%article_slug%: frontend
+
+Also note the `%field_name%`-like parameters, they're just placeholder and will be replaced by the field value (yes, the column value) of the model instance which is being created or updated. And i18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
+
+TODO
+----
+
+Write unit and functional tests. Functionaly testing templating cache invalidation is quite tricky, so I could take some time.
 
 License
 -------

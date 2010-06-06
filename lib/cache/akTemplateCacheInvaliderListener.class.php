@@ -2,6 +2,9 @@
 
 class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 {
+  static protected
+    $processed        = array();
+  
   protected 
     $configuration    = array(),
     $dispatcher       = null,
@@ -17,15 +20,43 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
     $this->dispatcher = $dispatcher;
     $this->viewCacheManager = $viewCacheManager;
     $this->configuration = $configuration;
+    $this->clearProcessed();
+  }
+  
+  public function clearProcessed()
+  {
+    self::$processed = array();
+  }
+  
+  public function isRecordProcessed(Doctrine_Record $record)
+  {
+    return in_array($this->getRecordFingerprint($record), self::$processed);
+  }
+  
+  public function setRecordProcessed(Doctrine_Record $record)
+  {
+    if (!$this->isRecordProcessed($record))
+    {
+      self::$processed[] = $this->getRecordFingerprint($record);
+    }
+  }
+  
+  public function getRecordFingerprint(Doctrine_Record $record)
+  {
+    return spl_object_hash($record);
   }
   
   public function postSave(Doctrine_Event $event)
   {
     $record = $event->getInvoker();
     
-    if (array_key_exists($model = get_class($record), $this->configuration))
+    if (array_key_exists($model = get_class($record), $this->configuration) && !$this->isRecordProcessed($record))
     {
       $this->processCacheInvalidation($record, $this->configuration[$model]);
+      
+      $this->setRecordProcessed($record);
+      
+      $event->skipOperation();
     }
   }
   
@@ -50,7 +81,7 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
       
       if (count($ruleCacheUris = $this->computeRecordCacheUris($record, $cacheUri)))
       {
-        foreach (array_unique($ruleCacheUris) as $cacheUri)
+        foreach ($ruleCacheUris as $cacheUri)
         {
           foreach ($applications as $application)
           {
@@ -73,49 +104,70 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
       }
     }
     
-    return $cacheUris;
+    return array_unique($cacheUris);
   }
   
   public function computeRecordCacheUri(Doctrine_Record $record, $cacheUri)
   {
-    if (!is_string($cacheUri))
+    if (!is_string($cacheUri) || false === preg_match_all('/%([a-z\._]+)%/si', $cacheUri, $m) || !isset($m[1]))
     {
       return;
     }
     
-    if (preg_match_all('/%([a-z_]+)%/si', $cacheUri, $m) && isset($m[1]))
+    $placeHolders = $m[0];
+    
+    $replaceValues = array();
+    
+    foreach ($m[1] as $field)
     {
-      $placeHolders = $m[0];
-      
-      $replaceValues = array();
-      
-      foreach ($m[1] as $field)
+      if (strpos($field, '.'))
       {
-        try
+        foreach (explode('.', $field) as $element)
         {
-          $replaceValues[] = $record->$field;
-        }
-        catch (Exception $e)
-        {
-            $replaceValues[] = '*';
+          if ($record->getTable()->hasRelation($element) && Doctrine_Relation::ONE === $record->getTable()->getRelation($element)->getType())
+          {
+            $record = $record->$element;
+          }
+          else
+          {
+            $field = $element;
+            
+            break;
+          }
         }
       }
       
-      $cacheUri = str_replace($placeHolders, $replaceValues, $cacheUri);
+      try
+      {
+        $replaceValues[] = $record->$field;
+      }
+      catch (Exception $e)
+      {
+        $replaceValues[] = '*';
+      }
     }
     
-    return $cacheUri;
+    return str_replace($placeHolders, $replaceValues, $cacheUri);
   }
   
   // TODO: what about $hosts? could be local configuration set by yaml
   public function purgeCacheUri($cacheUri, $targetApplication = null, $hosts = '*')
   {
     $currentApplication = sfConfig::get('sf_app');
-
+    
     if ($switchRequired = !is_null($targetApplication) && $targetApplication !== $currentApplication)
     {
-      sfContext::switchTo($targetApplication);
-
+      try
+      {
+        sfContext::switchTo($targetApplication);
+      }
+      catch (Exception $e)
+      {
+        $this->logError(sprintf('Impossible to invalidate template cache from "%s" application context "%s" (%s: %s)', $targetApplication, get_class($e), $e->getMessage()));
+        
+        return;
+      }
+      
       $viewCacheManager = sfContext::getInstance()->getViewCacheManager();
     }
     else
@@ -127,7 +179,7 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
     {
       return;
     }
-
+    
     $error = null;
 
     try
@@ -149,7 +201,12 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 
     if (!is_null($error))
     {
-      $this->dispatcher->notify(new sfEvent($this, 'application.log', array($error, 'priority' => sfLogger::ERR)));
+      $this->logError($error);
     }
+  }
+  
+  public function logError($message, $priority = sfLogger::ERR)
+  {
+    $this->dispatcher->notify(new sfEvent($this, 'application.log', array($message, 'priority' => $priority)));
   }
 }
