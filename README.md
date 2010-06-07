@@ -15,17 +15,19 @@ No, seriously, we're all grown-ups here. Just don't forget to enable the plugin 
 Usage
 -----
 
-Create a `doctrine_cache_invalider.yml` file in the `config` folder of your project (or the one of any plugin, if you work with plugins), and define template cache uris for each model you want:
+Create a `doctrine_cache_invalider.yml` file in the `config` folder of your project (or the one of any plugin, if you work with plugins), and define template cache uris for each Doctrine model you want:
 
     Article:
       uris:
-        MyContent/index?sf_culture=*: frontend
+        MyContent/index?sf_culture=*:               frontend
         MyContent/article?sf_culture=*&slug=%slug%: frontend
     Comment:
       uris:
         MyContent/article?sf_culture=*&slug=%article_slug%: frontend
 
-As you can see, you define template cache uris by their internal Symfony one, plus you define the application name where the cache is used, eg. `frontend`. This is especially useful if you work with a `backend` application and want your `frontend` templates cache files to be invalidated on related record updated.
+<small>Note that the `Article` and `Comment` Doctrine models should be defined in your `schema.yml` file.</small>
+
+As you can see, you define template cache uris by their internal Symfony one, plus you define the application name where the cache is used, eg. `frontend`. This is especially useful if you work with a `backend` application (eg. using forms provided by the admin-generator) and want your `frontend` templates cache files to be invalidated when records are created, deleted or updated.
 
 You can also define several applications where the cache uris are used, for example if you share some templates accross applications:
 
@@ -35,14 +37,13 @@ You can also define several applications where the cache uris are used, for exam
         MyContent/article?sf_culture=*&slug=%slug%: [frontend, otherapp]
     Comment:
       uris:
-        MyContent/article?sf_culture=*&slug=%article_slug%: frontend
+        MyContent/article?sf_culture=*&slug=%Article.slug%: frontend
 
-Also note the `%field_name%`-like parameters, they're just placeholder and will be replaced by the field value (yes, the column value) of the model instance which is being created or updated. And i18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
+Also note the `%field_name%`-like and `%RelatedModel.field_name%`-like parameters, they're just placeholders and will be replaced by the record and related object field value of the model instance which is being created or updated. 
 
-TODO
-----
+I18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
 
-Write unit and functional tests. Functionaly testing templating cache invalidation is quite tricky, so I could take some time.
+If you want to see sample use, check out the bundled [fixture project](http://github.com/n1k0/akDoctrineTemplateCacheInvaliderPlugin/tree/master/test/fixtures/project/) provided in the functional tests of the plugin.
 
 License
 -------
