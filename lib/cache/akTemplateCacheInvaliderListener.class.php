@@ -74,80 +74,23 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
     
     foreach ($rules['uris'] as $cacheUri => $applications)
     {
-      if (!count($applications = array($applications)))
+      if (is_null($applications))
       {
-        continue;
+        $applications = sfConfig::get('sf_app');
       }
       
-      if (count($ruleCacheUris = $this->computeRecordCacheUris($record, $cacheUri)))
+      $applications = array($applications);
+      
+      $resolver = new akDoctrineCacheUriResolver($record, $cacheUri);
+      
+      foreach ($resolver->computeUris() as $cacheUri)
       {
-        foreach ($ruleCacheUris as $cacheUri)
+        foreach ($applications as $application)
         {
-          foreach ($applications as $application)
-          {
-            $this->purgeCacheUri($cacheUri, $application);
-          }
+          $this->purgeCacheUri($cacheUri, $application);
         }
       }
     }
-  }
-  
-  public function computeRecordCacheUris(Doctrine_Record $record, $cacheUri)
-  {
-    $cacheUris = array($this->computeRecordCacheUri($record, $cacheUri));
-    
-    if ($record->getTable()->hasRelation('Translation'))
-    {
-      foreach ($record->Translation as $translation)
-      {
-        $cacheUris[] = $this->computeRecordCacheUri($translation, $cacheUri);
-      }
-    }
-    
-    return array_unique($cacheUris);
-  }
-  
-  public function computeRecordCacheUri(Doctrine_Record $record, $cacheUri)
-  {
-    if (!is_string($cacheUri) || false === preg_match_all('/%([a-z\._]+)%/si', $cacheUri, $m) || !isset($m[1]))
-    {
-      return;
-    }
-    
-    $placeHolders = $m[0];
-    
-    $replaceValues = array();
-    
-    foreach ($m[1] as $field)
-    {
-      if (strpos($field, '.'))
-      {
-        foreach (explode('.', $field) as $element)
-        {
-          if ($record->getTable()->hasRelation($element) && Doctrine_Relation::ONE === $record->getTable()->getRelation($element)->getType())
-          {
-            $record = $record->$element;
-          }
-          else
-          {
-            $field = $element;
-            
-            break;
-          }
-        }
-      }
-      
-      try
-      {
-        $replaceValues[] = $record->$field;
-      }
-      catch (Exception $e)
-      {
-        $replaceValues[] = '*';
-      }
-    }
-    
-    return str_replace($placeHolders, $replaceValues, $cacheUri);
   }
   
   // TODO: what about $hosts? could be local configuration set by yaml
