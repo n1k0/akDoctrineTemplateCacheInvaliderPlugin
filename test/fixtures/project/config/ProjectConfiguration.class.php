@@ -8,6 +8,8 @@ if (!isset($_SERVER['SYMFONY']))
 require_once $_SERVER['SYMFONY'].'/autoload/sfCoreAutoload.class.php';
 sfCoreAutoload::register();
 
+date_default_timezone_set('UTC');
+
 class ProjectConfiguration extends sfProjectConfiguration
 {
   public function setup()

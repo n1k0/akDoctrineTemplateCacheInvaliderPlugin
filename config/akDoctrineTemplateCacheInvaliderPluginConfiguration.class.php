@@ -10,9 +10,6 @@
  */
 class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfiguration
 {
-  protected 
-    $viewCacheManager = null;
-
   /**
    * @see sfPluginConfiguration
    */
@@ -20,16 +17,15 @@ class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfig
   {
     $this->dispatcher->connect('context.load_factories', array($this, 'listenToContextLoadFactoriesEvent'));
   }
-  
+
   public function listenToContextLoadFactoriesEvent(sfEvent $event)
   {
     $context = $event->getSubject();
-    
-    if ($this->viewCacheManager = $context->getViewCacheManager())
-    {
-      $configuration = include($context->getConfigCache()->checkConfig('config/doctrine_cache_invalider.yml'));
-      
-      Doctrine_Manager::getInstance()->addRecordListener(new akTemplateCacheInvaliderListener($this->dispatcher, $this->viewCacheManager, $configuration));
-    }
+
+    $configuration = include($context->getConfigCache()->checkConfig('config/doctrine_cache_invalider.yml'));
+
+    Doctrine_Manager::getInstance()->addRecordListener(new akTemplateCacheInvaliderListener(
+      $this->dispatcher, $context->getViewCacheManager(), $configuration
+    ));
   }
 }

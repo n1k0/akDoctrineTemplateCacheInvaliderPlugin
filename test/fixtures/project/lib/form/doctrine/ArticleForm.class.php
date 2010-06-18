@@ -12,5 +12,8 @@ class ArticleForm extends BaseArticleForm
 {
   public function configure()
   {
+    $this->embedI18n(array('fr', 'en'));
+    $this->widgetSchema->setLabel('fr', 'French');
+    $this->widgetSchema->setLabel('en', 'English');
   }
 }

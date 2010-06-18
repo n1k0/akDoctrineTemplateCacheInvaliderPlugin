@@ -12,7 +12,7 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
   
   public function __construct(sfEventDispatcher $dispatcher, sfViewCacheManager $viewCacheManager = null, array $configuration = array())
   {
-    if (null === $viewCacheManager || !count($configuration))
+    if (!count($configuration))
     {
       return;
     }
