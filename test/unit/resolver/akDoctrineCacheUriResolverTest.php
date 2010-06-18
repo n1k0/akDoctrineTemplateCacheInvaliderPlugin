@@ -2,7 +2,7 @@
 include dirname(__FILE__).'/../../bootstrap/functional.php';
 require_once $configuration->getSymfonyLibDir().'/vendor/lime/lime.php';
 
-$t = new lime_test(32, new lime_output_color());
+$t = new lime_test(33, new lime_output_color());
 
 // ->checkCulture()
 $t->diag('->checkCulture()');
@@ -37,6 +37,7 @@ $t->is(resolver(article(array('fr')), 'foo?slug=%slug%')->fetchRelatedValues(art
 $t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en')), 'slug'), array('en-slug'), '->fetchRelatedValues() fetches expected related value for default language');
 $t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('fr')), 'slug'), array('fr-slug'), '->fetchRelatedValues() fetches expected related value for another language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en', 'fr')), 'slug'), array('en-slug', 'fr-slug'), '->fetchRelatedValues() fetches expected value for multiple languages');
+$t->is(resolver(comment(array('en')), 'foo?author=%author%')->fetchRelatedValues(comment(array('en')), 'author'), array('niko'), '->fetchRelatedValues() fetches expected value for a model without i18n behaviour');
 
 // ->hasTranslation()
 $t->diag('->hasTranslation()');

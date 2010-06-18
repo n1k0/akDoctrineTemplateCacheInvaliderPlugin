@@ -94,26 +94,28 @@ class akDoctrineCacheUriResolver
   public function fetchRelatedValues(Doctrine_Record $record, $property)
   {
     $values = array();
-    
     $skipDirectPropertyGet = false;
-    
+
     // Record available translations of property, if available
-    if (!is_null($this->cacheUriCulture) && $this->hasTranslation($record, $this->cacheUriCulture))
+    if ($record->hasRelation('Translation'))
     {
-      $translations = array($record->Translation[$this->cacheUriCulture]);
-      
-      $skipDirectPropertyGet = true;
-    }
-    else
-    {
-      $translations = $record->Translation;
-    }
-    
-    foreach ($translations as $translation)
-    {
-      if (isset($translation[$property]) && $translation[$property])
+      if (!is_null($this->cacheUriCulture) && $this->hasTranslation($record, $this->cacheUriCulture))
       {
-        $values[] = $translation[$property];
+        $translations = array($record->Translation[$this->cacheUriCulture]);
+
+        $skipDirectPropertyGet = true;
+      }
+      else
+      {
+        $translations = $record->Translation;
+      }
+
+      foreach ($translations as $translation)
+      {
+        if (isset($translation[$property]) && $translation[$property])
+        {
+          $values[] = $translation[$property];
+        }
       }
     }
 
