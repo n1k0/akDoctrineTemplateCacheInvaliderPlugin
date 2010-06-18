@@ -23,7 +23,7 @@
 <ul id="comments">
 <?php foreach ($article['Comments'] as $comment): ?>
   <li>
-    <p><?php echo $comment['author'] ?></p>
+    <p><?php echo $comment['Author']['name'] ?></p>
     <blockquote><?php echo $comment['content'] ?></blockquote>
   </li>
 <?php endforeach; ?>

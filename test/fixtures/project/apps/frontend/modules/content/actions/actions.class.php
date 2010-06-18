@@ -18,9 +18,14 @@ class contentActions extends sfActions
       ->execute()
     ;
   }
-  
+
   public function executeArticle(sfWebRequest $request)
   {
     $this->article = $this->getRoute()->getObject();
+  }
+
+  public function executeAuthor(sfWebRequest $request)
+  {
+    $this->author = $this->getRoute()->getObject();
   }
 }

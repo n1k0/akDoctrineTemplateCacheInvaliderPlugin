@@ -2,6 +2,10 @@ article:
   enabled: true
   lifetime: 86400
 
+author:
+  enabled: true
+  lifetime: 86400
+
 index:
   enabled: true
   lifetime: 86400

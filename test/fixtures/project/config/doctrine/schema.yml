@@ -20,7 +20,7 @@ Article:
 Comment:
   columns:
     article_id: integer
-    author: string(255)
+    author_id: integer
     content: string(5000)
   relations:
     Article:
@@ -28,4 +28,23 @@ Comment:
       local: article_id
       foreign: id
       foreignAlias: Comments
+      onDelete: CASCADE
+    Author:
+      type: one
+      local: author_id
+      foreign: id
+      foreignAlias: Comments
+      onDelete: CASCADE
+
+Author:
+  actAs:
+    Sluggable:
+      fields:    [name]
+  columns:
+    name: string(255)
+  relations:
+    Comments:
+      type: many
+      local: id
+      foreign: author_id
       onDelete: CASCADE

@@ -39,7 +39,7 @@ $browser->
   end()
 ;
 
-$browser->test()->info('Updating first article');
+$browser->test()->info('Updating first article with php code');
 $firstArticle = Doctrine::getTable('Article')->doSelectForSlug(array(
   'slug' => 'my-first-article',
 ));
@@ -67,9 +67,15 @@ $browser->
   end()
 ;
 
+$browser->test()->info('Updating first article from another app (with caching system disabled)');
+
+# Reset record listener because invalider is already added
+foreach (array('Article', 'ArticleTranslation', 'Comment', 'Author') as $model)
+{
+  Doctrine::getTable($model)->setRecordListener(new Doctrine_Record_Listener_Chain());
+}
 sfContext::switchTo('backend');
 $configuration->loadHelpers('Partial');
-Doctrine_Manager::getInstance()->setRecordListener(new Doctrine_Record_Listener_Chain()); # Reset global record listener because invalider is already added
 
 $backendBrowser = new sfTestFunctional(new sfBrowser());
 $backendBrowser->

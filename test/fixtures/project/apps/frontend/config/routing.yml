@@ -15,6 +15,16 @@ article:
     module: content
     action: article
 
+author:
+  class: sfDoctrineRoute
+  url: /author/:slug/view
+  options:
+    model: Author
+    type: object
+  param:
+    module: content
+    action: author
+
 homepage:
   url:   /
   param: { module: default, action: index }

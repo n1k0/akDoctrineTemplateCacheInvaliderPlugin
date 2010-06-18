@@ -1,3 +1,9 @@
+Author:
+  author_niko:
+    name: niko
+  author_John:
+    name: John
+
 Article:
   article1:
     Translation:
@@ -19,9 +25,9 @@ Article:
 Comment:
   a1c1:
     Article: article1
-    author:  niko
+    Author:  author_niko
     content: Hello
   a1c2:
     Article: article1
-    author:  John
+    Author:  author_John
     content: Yes

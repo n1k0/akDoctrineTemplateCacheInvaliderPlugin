@@ -14,13 +14,13 @@ abstract class BaseCommentFormFilter extends BaseFormFilterDoctrine
   {
     $this->setWidgets(array(
       'article_id' => new sfWidgetFormDoctrineChoice(array('model' => $this->getRelatedModelName('Article'), 'add_empty' => true)),
-      'author'     => new sfWidgetFormFilterInput(),
+      'author_id'  => new sfWidgetFormDoctrineChoice(array('model' => $this->getRelatedModelName('Author'), 'add_empty' => true)),
       'content'    => new sfWidgetFormFilterInput(),
     ));
 
     $this->setValidators(array(
       'article_id' => new sfValidatorDoctrineChoice(array('required' => false, 'model' => $this->getRelatedModelName('Article'), 'column' => 'id')),
-      'author'     => new sfValidatorPass(array('required' => false)),
+      'author_id'  => new sfValidatorDoctrineChoice(array('required' => false, 'model' => $this->getRelatedModelName('Author'), 'column' => 'id')),
       'content'    => new sfValidatorPass(array('required' => false)),
     ));
 
@@ -43,7 +43,7 @@ abstract class BaseCommentFormFilter extends BaseFormFilterDoctrine
     return array(
       'id'         => 'Number',
       'article_id' => 'ForeignKey',
-      'author'     => 'Text',
+      'author_id'  => 'ForeignKey',
       'content'    => 'Text',
     );
   }

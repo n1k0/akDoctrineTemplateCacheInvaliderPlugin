@@ -24,8 +24,17 @@ class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfig
 
     $configuration = include($context->getConfigCache()->checkConfig('config/doctrine_cache_invalider.yml'));
 
-    Doctrine_Manager::getInstance()->addRecordListener(new akTemplateCacheInvaliderListener(
-      $this->dispatcher, $context->getViewCacheManager(), $configuration
-    ));
+    if (is_array($configuration) and sizeof($configuration))
+    {
+      foreach ($configuration as $model => $data)
+      {
+        if (($table = Doctrine::getTable($model)) and $table instanceof Doctrine_Table)
+        {
+          $table->addRecordListener(new akTemplateCacheInvaliderListener(
+            $this->dispatcher, $context->getViewCacheManager(), $configuration
+          ));
+        }
+      }
+    }
   }
 }

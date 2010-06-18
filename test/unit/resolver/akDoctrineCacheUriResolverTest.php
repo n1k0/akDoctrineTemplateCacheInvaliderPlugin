@@ -37,7 +37,7 @@ $t->is(resolver(article(array('fr')), 'foo?slug=%slug%')->fetchRelatedValues(art
 $t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en')), 'slug'), array('en-slug'), '->fetchRelatedValues() fetches expected related value for default language');
 $t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('fr')), 'slug'), array('fr-slug'), '->fetchRelatedValues() fetches expected related value for another language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en', 'fr')), 'slug'), array('en-slug', 'fr-slug'), '->fetchRelatedValues() fetches expected value for multiple languages');
-$t->is(resolver(comment(array('en')), 'foo?author=%author%')->fetchRelatedValues(comment(array('en')), 'author'), array('niko'), '->fetchRelatedValues() fetches expected value for a model without i18n behaviour');
+$t->is(resolver(comment(array('en')), 'foo?author=%author.name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a model without i18n behaviour');
 
 // ->hasTranslation()
 $t->diag('->hasTranslation()');
@@ -76,10 +76,16 @@ function article(array $langs = array())
 function comment(array $articleLangs = array())
 {
   $comment = new Comment();
-  $comment->author = 'niko';
+  $comment->setAuthor(author('niko'));
   $comment->content = 'Booh.';
   $comment->setArticle(article($articleLangs));
   return $comment;
+}
+function author($name)
+{
+  $author = new Author();
+  $author->name = $name;
+  return $author;
 }
 
 function resolver($record, $cacheUri)

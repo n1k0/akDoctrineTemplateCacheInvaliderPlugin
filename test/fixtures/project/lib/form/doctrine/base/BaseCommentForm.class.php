@@ -17,14 +17,14 @@ abstract class BaseCommentForm extends BaseFormDoctrine
     $this->setWidgets(array(
       'id'         => new sfWidgetFormInputHidden(),
       'article_id' => new sfWidgetFormDoctrineChoice(array('model' => $this->getRelatedModelName('Article'), 'add_empty' => true)),
-      'author'     => new sfWidgetFormInputText(),
+      'author_id'  => new sfWidgetFormDoctrineChoice(array('model' => $this->getRelatedModelName('Author'), 'add_empty' => true)),
       'content'    => new sfWidgetFormTextarea(),
     ));
 
     $this->setValidators(array(
       'id'         => new sfValidatorChoice(array('choices' => array($this->getObject()->get('id')), 'empty_value' => $this->getObject()->get('id'), 'required' => false)),
       'article_id' => new sfValidatorDoctrineChoice(array('model' => $this->getRelatedModelName('Article'), 'required' => false)),
-      'author'     => new sfValidatorString(array('max_length' => 255, 'required' => false)),
+      'author_id'  => new sfValidatorDoctrineChoice(array('model' => $this->getRelatedModelName('Author'), 'required' => false)),
       'content'    => new sfValidatorString(array('max_length' => 5000, 'required' => false)),
     ));
 

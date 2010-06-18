@@ -5,3 +5,6 @@ Article:
 Comment:
   uris:
     content/article?sf_culture=*&slug=%Article.slug%: frontend
+Author:
+  uris:
+    content/author?slug=%slug%:                       frontend
