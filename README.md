@@ -55,4 +55,4 @@ Credits
 
 This plugin is developped by [Nicolas Perriault](http://prendreuncafe.com/).
 
-So, why the hell is this plugin prefixed with `ak`? Because it's a plugin I've developed and am currently using in my company, [Akei](http://www.akei.com/).
+So, why the hell is this plugin prefixed with `ak`? Because it's a plugin I've developed and am currently using in my company, [Akei](http://www.akei.com/)...
