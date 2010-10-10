@@ -43,6 +43,12 @@ Also note the `%field_name%`-like and `%RelatedModel.field_name%`-like parameter
 
 I18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
 
+You can also disabled cache invalidation for an application, like `frontend` for example, via `app.yml` file:
+
+    all:
+      akDoctrineTemplateCacheInvaliderPlugin:
+        enabled_listener: false
+
 If you want to see sample use, check out the bundled [fixture project](http://github.com/n1k0/akDoctrineTemplateCacheInvaliderPlugin/tree/master/test/fixtures/project/) provided in the functional tests of the plugin.
 
 License

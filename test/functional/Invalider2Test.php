@@ -27,6 +27,7 @@ $browser->
   end()
 ;
 
+sfContext::switchTo('backend');
 $firstAuthor->name = 'n1k0';
 $firstAuthor->save($conn);
 

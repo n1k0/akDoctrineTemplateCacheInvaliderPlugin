@@ -39,12 +39,35 @@ $browser->
   end()
 ;
 
-$browser->test()->info('Updating first article with php code');
+$browser->test()->info('Updating first article with php code - cache invalidation is disabled on frontend');
+$firstArticle = Doctrine::getTable('Article')->doSelectForSlug(array(
+  'slug' => 'my-first-article',
+));
+$firstArticle->title = 'My first article, cache invalidation is disabled';
+$firstArticle->save($conn);
+
+$browser->
+  get('/en/articles')->
+  with('response')->begin()->
+    checkElement('h1', '/Articles/')->
+    checkElement('ul li', 2)->
+    checkElement('ul li', '/My first article/')->
+    checkElement('ul li:contains("cache invalidation is disabled")', false)->
+  end()->
+  with('view_cache')->begin()->
+    isCached(true, false)->
+  end()
+;
+
+$browser->test()->info('Updating first article with php code - switch to backend');
+sfContext::switchTo('backend');
 $firstArticle = Doctrine::getTable('Article')->doSelectForSlug(array(
   'slug' => 'my-first-article',
 ));
 $firstArticle->title = 'My first article, modified';
 $firstArticle->save($conn);
+
+sfContext::switchTo('frontend');
 
 $browser->
   get('/en/articles')->
@@ -67,13 +90,7 @@ $browser->
   end()
 ;
 
-$browser->test()->info('Updating first article from another app (with caching system disabled)');
-
-# Reset record listener because invalider is already added
-foreach (array('Article', 'ArticleTranslation', 'Comment', 'Author') as $model)
-{
-  Doctrine::getTable($model)->setRecordListener(new Doctrine_Record_Listener_Chain());
-}
+$browser->test()->info('Updating first article from another app (with caching system disabled) - switch to backend');
 sfContext::switchTo('backend');
 $configuration->loadHelpers('Partial');
 
@@ -105,6 +122,5 @@ $browser->
     isCached(true, false)->
   end()
 ;
-
 
 $conn->rollback();

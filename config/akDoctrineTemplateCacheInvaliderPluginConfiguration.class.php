@@ -15,7 +15,11 @@ class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfig
    */
   public function initialize()
   {
-    $this->dispatcher->connect('context.load_factories', array($this, 'listenToContextLoadFactoriesEvent'));
+    // enable Doctrine listener only if needed
+    if (sfConfig::get('app_akDoctrineTemplateCacheInvaliderPlugin_enabled_listener'))
+    {
+      $this->dispatcher->connect('context.load_factories', array($this, 'listenToContextLoadFactoriesEvent'));
+    }
   }
 
   public function listenToContextLoadFactoriesEvent(sfEvent $event)
@@ -32,7 +36,7 @@ class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfig
         {
           $table->addRecordListener(new akTemplateCacheInvaliderListener(
             $this->dispatcher, $context->getViewCacheManager(), $configuration
-          ));
+          ), 'akTemplateCacheInvaliderListener');
         }
       }
     }

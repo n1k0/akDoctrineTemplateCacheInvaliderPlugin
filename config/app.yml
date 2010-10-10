@@ -1,0 +1,3 @@
+all:
+  akDoctrineTemplateCacheInvaliderPlugin:
+    enabled_listener: true
