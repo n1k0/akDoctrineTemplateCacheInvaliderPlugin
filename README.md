@@ -21,6 +21,7 @@ Create a `doctrine_cache_invalider.yml` file in the `config` folder of your proj
       uris:
         MyContent/index?sf_culture=*:               frontend
         MyContent/article?sf_culture=*&slug=%slug%: frontend
+    
     Comment:
       uris:
         MyContent/article?sf_culture=*&slug=%article_slug%: frontend
@@ -35,6 +36,7 @@ You can also define several applications where the cache uris are used, for exam
       uris:
         MyContent/index?sf_culture=*: [frontend, otherapp]
         MyContent/article?sf_culture=*&slug=%slug%: [frontend, otherapp]
+    
     Comment:
       uris:
         MyContent/article?sf_culture=*&slug=%Article.slug%: frontend
@@ -42,6 +44,19 @@ You can also define several applications where the cache uris are used, for exam
 Also note the `%field_name%`-like and `%RelatedModel.field_name%`-like parameters, they're just placeholders and will be replaced by the record and related object field value of the model instance which is being created or updated. 
 
 I18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
+
+Also, the configuration allows to inherits rules from ones already configured for a given model using the `extends` keyword, eg.:
+
+    Article:
+      uris:
+        MyContent/index?sf_culture=*: [frontend, otherapp]
+        MyContent/article?sf_culture=*&slug=%slug%: [frontend, otherapp]
+    
+    FrontageArticle:
+      # will inherits all uris defined for Article
+      extends: Article
+      uris:
+        MyOtherModule/homepage?sf_culture=*: frontend
 
 You can also disabled cache invalidation for an application, like `frontend` for example, via `app.yml` file:
 

@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * Symfony Template Cache Invalider Doctrine listener.
+ *
+ * @package     akDoctrineTemplateCacheInvaliderPlugin
+ * @subpackage  cache
+ * @author      Nicolas Perriault <np@akei.com>
+ */
 class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 {
   static protected
@@ -52,7 +58,7 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
     
     if (array_key_exists($model = get_class($record), $this->configuration) && !$this->isRecordProcessed($record))
     {
-      $this->processCacheInvalidation($record, $this->configuration[$model]);
+      $this->processCacheInvalidation($record);
       
       $this->setRecordProcessed($record);
       
@@ -62,17 +68,27 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
   
   public function processCacheInvalidation(Doctrine_Record $record, array $rules = null)
   {
+    $model = get_class($record);
+    
+    if (is_null($rules) && array_key_exists($model, $this->configuration))
+    {
+      $rules = $this->configuration[$model];
+    }
+    
     if (is_null($rules) || !is_array($rules) || !count($rules))
     {
-      return;
+      return; // nothing to process
     }
     
-    if (!isset($rules['uris']) || !is_array($rules['uris']))
+    $cacheUris = isset($rules['uris']) ? $rules['uris'] : array();
+    
+    // Check for rules inheritance and merge cache uris when applicable
+    if (isset($rules['extends']) && isset($this->configuration[$rules['extends']]) && isset($this->configuration[$rules['extends']]['uris']))
     {
-      return;
+      $cacheUris = array_merge($cacheUris, $this->configuration[$rules['extends']]['uris']);
     }
     
-    foreach ($rules['uris'] as $cacheUri => $applications)
+    foreach ($cacheUris as $cacheUri => $applications)
     {
       if (is_null($applications))
       {

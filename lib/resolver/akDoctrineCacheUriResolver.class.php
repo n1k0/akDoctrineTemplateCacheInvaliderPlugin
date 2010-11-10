@@ -1,5 +1,11 @@
 <?php
-
+/**
+ * Doctrine Record related Symfony Template Cache URI resolver.
+ *
+ * @package     akDoctrineTemplateCacheInvaliderPlugin
+ * @subpackage  resolver
+ * @author      Nicolas Perriault <np@akei.com>
+ */
 class akDoctrineCacheUriResolver
 {
   const CATCH_ALL = '*';

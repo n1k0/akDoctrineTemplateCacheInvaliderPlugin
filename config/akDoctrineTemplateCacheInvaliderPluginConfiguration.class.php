@@ -1,15 +1,15 @@
 <?php
-
 /**
  * akDoctrineTemplateCacheInvaliderPlugin configuration.
  * 
  * @package     akDoctrineTemplateCacheInvaliderPlugin
  * @subpackage  config
  * @author      Nicolas Perriault <np@akei.com>
- * @version     SVN: $Id: PluginConfiguration.class.php 17207 2009-04-10 15:36:26Z Kris.Wallsmith $
  */
 class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfiguration
 {
+  static protected $doctrineListener;
+  
   /**
    * @see sfPluginConfiguration
    */
@@ -21,24 +21,44 @@ class akDoctrineTemplateCacheInvaliderPluginConfiguration extends sfPluginConfig
       $this->dispatcher->connect('context.load_factories', array($this, 'listenToContextLoadFactoriesEvent'));
     }
   }
+  
+  /**
+   * @return akTemplateCacheInvaliderListener|null
+   */
+  static public function getDoctrineListener()
+  {
+    return self::$doctrineListener;
+  }
 
+  /**
+   * @throws akDoctrineTemplateCacheInvaliderException if configuration is invalid
+   */
   public function listenToContextLoadFactoriesEvent(sfEvent $event)
   {
     $context = $event->getSubject();
 
     $configuration = include($context->getConfigCache()->checkConfig('config/doctrine_cache_invalider.yml'));
 
-    if (is_array($configuration) and sizeof($configuration))
+    if (!is_array($configuration) || !sizeof($configuration))
     {
-      foreach ($configuration as $model => $data)
+      return;
+    }
+    
+    self::$doctrineListener = new akTemplateCacheInvaliderListener($this->dispatcher, $context->getViewCacheManager(), $configuration);
+
+    foreach ($configuration as $model => $data)
+    {
+      try
       {
-        if (($table = Doctrine::getTable($model)) and $table instanceof Doctrine_Table)
-        {
-          $table->addRecordListener(new akTemplateCacheInvaliderListener(
-            $this->dispatcher, $context->getViewCacheManager(), $configuration
-          ), 'akTemplateCacheInvaliderListener');
-        }
+        $table = Doctrine::getTable($model);
       }
+      catch (Doctrine_Exception $e)
+      {
+        throw new akDoctrineTemplateCacheInvaliderException(sprintf('Couldn\'t retrieve Doctrine table instance for "%s" model: %s',
+                                                                    $e->getMessage()));
+      }
+
+      $table->addRecordListener(self::$doctrineListener, get_class(self::$doctrineListener));
     }
   }
 }
