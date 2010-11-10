@@ -130,7 +130,7 @@ class akDoctrineCacheUriResolver
     {
       try
       {
-        if ($value = (string) $record->$property)
+        if ($value = (string) $record->copy(true)->$property)
         {
           $values[] = $value;
         }
