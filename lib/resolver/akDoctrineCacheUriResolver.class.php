@@ -130,10 +130,14 @@ class akDoctrineCacheUriResolver
     {
       try
       {
-        if ($value = (string) $record->copy(true)->$property)
+        // circumvents a silly Doctrine behavior which may alter the record instance reference 
+        // when trying to access some of its properties, so we copy it instead to be safe
+        $copy = clone $record->copy(true);  
+        if ($value = (string) $copy->$property)
         {
           $values[] = $value;
         }
+        unset($copy);
       }
       catch (Exception $e)
       {
