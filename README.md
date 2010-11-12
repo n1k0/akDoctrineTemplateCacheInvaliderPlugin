@@ -45,24 +45,41 @@ Also note the `%field_name%`-like and `%RelatedModel.field_name%`-like parameter
 
 I18n is also managed, so if your models implement the Doctrine [I18n Behavior](http://www.doctrine-project.org/projects/orm/1.2/docs/manual/behaviors/en#core-behaviors:i18n), supplementary template cache uris will be invalidated to handle all available translations for the field.
 
+### Rules inheritance
+
 Also, the configuration allows to inherits rules from ones already configured for a given model using the `extends` keyword, eg.:
 
     Article:
       uris:
-        MyContent/index?sf_culture=*: [frontend, otherapp]
-        MyContent/article?sf_culture=*&slug=%slug%: [frontend, otherapp]
+        "MyContent/index?sf_culture=*": [frontend, otherapp]
+        "MyContent/article?sf_culture=*&slug=%slug%": [frontend, otherapp]
     
     FrontageArticle:
       # will inherits all uris defined for Article
       extends: Article
       uris:
-        MyOtherModule/homepage?sf_culture=*: frontend
+        "MyOtherModule/homepage?sf_culture=*": frontend
 
-You can also disabled cache invalidation for an application, like `frontend` for example, via `app.yml` file:
+### Special Cache URIs ###
 
+The plugin ships with a special cache uri which is `*`; this cache uri is a shortcut to tell the plugin to remove all cache related to a given application:
+
+    Article:
+      uris:
+        "*": frontend
+
+Here all the cached templates for the `frontend` application will be cleared.
+
+### Disabling Cache Invalidation
+
+You can disable cache invalidation for an application, like `frontend` for example, in its related `app.yml` file:
+
+    # apps/frontend/config/app.yml
     all:
       akDoctrineTemplateCacheInvaliderPlugin:
         enabled_listener: false
+
+### Sample Project
 
 If you want to see sample use, check out the bundled [fixture project](http://github.com/n1k0/akDoctrineTemplateCacheInvaliderPlugin/tree/master/test/fixtures/project/) provided in the functional tests of the plugin.
 
