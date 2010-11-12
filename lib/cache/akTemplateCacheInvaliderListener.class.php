@@ -54,6 +54,16 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 
   public function postSave(Doctrine_Event $event)
   {
+    $this->processEvent($event, true);
+  }
+  
+  public function preDelete(Doctrine_Event $event)
+  {
+    $this->processEvent($event, false);
+  }
+  
+  public function processEvent(Doctrine_Event $event, $skip = false)
+  {
     $record = $event->getInvoker();
 
     if (array_key_exists($model = get_class($record), $this->configuration) && !$this->isRecordProcessed($record))
@@ -62,7 +72,10 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 
       $this->setRecordProcessed($record);
 
-      $event->skipOperation();
+      if (true === $skip)
+      {
+        $event->skipOperation();
+      }
     }
   }
 
@@ -99,7 +112,9 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 
       $resolver = new akDoctrineCacheUriResolver($record, $cacheUri);
 
-      foreach ($resolver->computeUris() as $cacheUri)
+      $computedUris = $resolver->computeUris();
+
+      foreach ($computedUris as $cacheUri)
       {
         foreach ($applications as $application)
         {
