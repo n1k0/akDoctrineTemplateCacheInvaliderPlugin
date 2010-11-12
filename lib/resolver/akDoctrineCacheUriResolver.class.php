@@ -8,8 +8,6 @@
  */
 class akDoctrineCacheUriResolver
 {
-  const CATCH_ALL = '*';
-  
   protected
     $cacheUri        = null,
     $cacheUriCulture = null,
@@ -132,7 +130,7 @@ class akDoctrineCacheUriResolver
       {
         // circumvents a silly Doctrine behavior which may alter the record instance reference 
         // when trying to access some of its properties, so we copy it instead to be safe
-        $copy = clone $record->copy(true);  
+        $copy = $record->copy(false);  
         if ($value = (string) $copy->$property)
         {
           $values[] = $value;
