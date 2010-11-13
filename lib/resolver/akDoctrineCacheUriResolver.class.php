@@ -89,7 +89,7 @@ class akDoctrineCacheUriResolver
         }
       }
 
-      $relatedFields[$field] = $this->fetchRelatedValues($currentRecord, $element);
+      $relatedFields[sprintf('%%%s%%', $field)] = $this->fetchRelatedValues($currentRecord, $element);
     }
 
     return $relatedFields;
@@ -146,6 +146,11 @@ class akDoctrineCacheUriResolver
     return array_unique($values);
   }
 
+  /**
+   * Computes cache URIs
+   *
+   * @return array
+   */
   public function computeUris()
   {
     $computedCacheUris = array();
@@ -153,20 +158,47 @@ class akDoctrineCacheUriResolver
     if (!count($this->placeholders))
     {
       $computedCacheUris[] = $this->cacheUri;
-
       return $computedCacheUris;
     }
     
-    $newUri = $this->cacheUri;
-    
-    foreach ($this->getRelatedFields() as $placeholder => $values)
+    // generate the combinations
+    $patterns = array();
+
+    foreach ($this->getRelatedFields() as $pattern => $values)
     {
-      foreach ($values as $value)
-      {
-        $newUri = str_replace(sprintf('%%%s%%', $placeholder), $value, $newUri);
-      }
+      $patterns[] = $pattern;
+      $combinations = isset($combinations) ? $this->expandCombinations($combinations, $values) : $values;
     }
 
-    return array($newUri);
+    // generate the uris for each combination
+    foreach ($combinations as $combination)
+    {
+      $computedCacheUris[] = str_replace($patterns, $combination, $this->cacheUri);
+    }
+
+    return array_unique($computedCacheUris);
+  }
+  
+  /**
+   * Adds a level of depth in the combinations for each new array of values
+   *
+   * @author lheurt (http://stackoverflow.com/users/506682/lheurt)
+   * @link   http://stackoverflow.com/questions/4172020/recursive-strings-replacement-with-php/4172467
+   */
+  protected function expandCombinations($combinations, $values)
+  {
+    $results = array();
+    $i = 0;
+    //combine each existing combination with all the new values
+    foreach($combinations as $combination) 
+    {
+      foreach($values as $value) 
+      {
+        $results[$i] = is_array($combination) ? $combination : array($combination);
+        $results[$i][] = $value;
+        $i++;
+      }
+    }
+    return $results;
   }
 }
