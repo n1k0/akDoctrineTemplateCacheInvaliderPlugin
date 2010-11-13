@@ -15,11 +15,13 @@ abstract class BaseArticleForm extends BaseFormDoctrine
   public function setup()
   {
     $this->setWidgets(array(
-      'id' => new sfWidgetFormInputHidden(),
+      'id'        => new sfWidgetFormInputHidden(),
+      'author_id' => new sfWidgetFormDoctrineChoice(array('model' => $this->getRelatedModelName('Author'), 'add_empty' => true)),
     ));
 
     $this->setValidators(array(
-      'id' => new sfValidatorChoice(array('choices' => array($this->getObject()->get('id')), 'empty_value' => $this->getObject()->get('id'), 'required' => false)),
+      'id'        => new sfValidatorChoice(array('choices' => array($this->getObject()->get('id')), 'empty_value' => $this->getObject()->get('id'), 'required' => false)),
+      'author_id' => new sfValidatorDoctrineChoice(array('model' => $this->getRelatedModelName('Author'), 'required' => false)),
     ));
 
     $this->widgetSchema->setNameFormat('article[%s]');

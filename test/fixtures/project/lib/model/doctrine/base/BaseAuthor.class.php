@@ -32,7 +32,7 @@ abstract class BaseAuthor extends sfDoctrineRecord
     public function setUp()
     {
         parent::setUp();
-        $this->hasMany('Comment as Comments', array(
+        $this->hasMany('Article as Comments', array(
              'local' => 'id',
              'foreign' => 'author_id'));
 

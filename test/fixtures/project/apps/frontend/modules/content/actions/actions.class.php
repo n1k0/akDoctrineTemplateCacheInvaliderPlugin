@@ -27,5 +27,6 @@ class contentActions extends sfActions
   public function executeAuthor(sfWebRequest $request)
   {
     $this->author = $this->getRoute()->getObject();
+    $this->comments = Doctrine_Core::getTable('Comment')->createQuery()->where('author_id = ?', $this->author->id)->fetchArray();
   }
 }

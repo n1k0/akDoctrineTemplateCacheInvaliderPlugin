@@ -13,9 +13,11 @@ abstract class BaseArticleFormFilter extends BaseFormFilterDoctrine
   public function setup()
   {
     $this->setWidgets(array(
+      'author_id' => new sfWidgetFormDoctrineChoice(array('model' => $this->getRelatedModelName('Author'), 'add_empty' => true)),
     ));
 
     $this->setValidators(array(
+      'author_id' => new sfValidatorDoctrineChoice(array('required' => false, 'model' => $this->getRelatedModelName('Author'), 'column' => 'id')),
     ));
 
     $this->widgetSchema->setNameFormat('article_filters[%s]');
@@ -35,7 +37,8 @@ abstract class BaseArticleFormFilter extends BaseFormFilterDoctrine
   public function getFields()
   {
     return array(
-      'id' => 'Number',
+      'id'        => 'Number',
+      'author_id' => 'ForeignKey',
     );
   }
 }

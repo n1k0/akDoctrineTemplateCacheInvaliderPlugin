@@ -8,9 +8,16 @@ Article:
           uniqueBy:  [lang, title]
           canUpdate: false
   columns:
+    author_id: integer
     title: string(255)
     content: string(5000)
   relations:
+    Author:
+      type: one
+      local: author_id
+      foreign: id
+      foreignAlias: Comments
+      onDelete: CASCADE
     Comments:
       type: many
       local: id

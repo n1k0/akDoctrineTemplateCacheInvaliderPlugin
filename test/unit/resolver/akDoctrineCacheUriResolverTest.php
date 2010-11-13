@@ -2,7 +2,7 @@
 include dirname(__FILE__).'/../../bootstrap/functional.php';
 require_once $configuration->getSymfonyLibDir().'/vendor/lime/lime.php';
 
-$t = new lime_test(33, new lime_output_color());
+$t = new lime_test(36, new lime_output_color());
 
 // ->checkCulture()
 $t->diag('->checkCulture()');
@@ -25,10 +25,10 @@ $t->diag('->checkTranslations()');
 
 // ->getRelatedFields()
 $t->diag('->getRelatedFields()');
-$t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->getRelatedFields(), array('Article.slug' => array(0 => 'en-slug')), '->getRelatedFields() retrieves related field for default language');
-$t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->getRelatedFields(), array('Article.slug' => array(0 => 'fr-slug')), '->getRelatedFields() retrieves related field for another language');
-$t->is(resolver(comment(array('en', 'fr')), 'foo?slug=%Article.slug%')->getRelatedFields(), array('Article.slug' => array(0 => 'en-slug', 1 => 'fr-slug')), '->getRelatedFields() retrieves related field for multiple languages');
-$t->is(resolver(comment(array('en', 'fr')), 'foo?sf_culture=fr&slug=%Article.slug%')->getRelatedFields(), array('Article.slug' => array(0 => 'fr-slug')), '->getRelatedFields() can limit retrieved fields for multiple languages');
+$t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->getRelatedFields(), array('%Article.slug%' => array(0 => 'en-slug')), '->getRelatedFields() retrieves related field for default language');
+$t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->getRelatedFields(), array('%Article.slug%' => array(0 => 'fr-slug')), '->getRelatedFields() retrieves related field for another language');
+$t->is(resolver(comment(array('en', 'fr')), 'foo?slug=%Article.slug%')->getRelatedFields(), array('%Article.slug%' => array(0 => 'en-slug', 1 => 'fr-slug')), '->getRelatedFields() retrieves related field for multiple languages');
+$t->is(resolver(comment(array('en', 'fr')), 'foo?sf_culture=fr&slug=%Article.slug%')->getRelatedFields(), array('%Article.slug%' => array(0 => 'fr-slug')), '->getRelatedFields() can limit retrieved fields for multiple languages');
 
 // ->fetchRelatedValues()
 $t->diag('->fetchRelatedValues()');
@@ -38,6 +38,7 @@ $t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->fetchRelatedVa
 $t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('fr')), 'slug'), array('fr-slug'), '->fetchRelatedValues() fetches expected related value for another language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en', 'fr')), 'slug'), array('en-slug', 'fr-slug'), '->fetchRelatedValues() fetches expected value for multiple languages');
 $t->is(resolver(comment(array('en')), 'foo?author=%author.name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a model without i18n behaviour');
+$t->is(resolver(article(array('en', 'fr')), 'foo?slug=%Article.slug%&author=%Author.name%')->fetchRelatedValues(article(array('en', 'fr')), 'slug'), array('en-slug', 'fr-slug'), '->fetchRelatedValues() fetches multiple expected values for multiple languages');
 
 // ->hasTranslation()
 $t->diag('->hasTranslation()');
@@ -52,10 +53,12 @@ $t->is(resolver($a, 'foo')->hasTranslation($a, 'fr'), true, '->hasTranslation() 
 $t->diag('->computeUris()');
 $t->is(resolver(article(array('en')), 'foo?slug=%slug%')->computeUris(), array('foo?slug=en-slug'), '->computeUris() computes i18n cache uri including field value in default language');
 $t->is(resolver(article(array('fr')), 'foo?slug=%slug%')->computeUris(), array('foo?slug=fr-slug'), '->computeUris() computes i18n cache uri including field value in another language');
+$t->is(resolver(article(array('en')), 'foo?slug=%slug%&author=%Author.name%')->computeUris(), array('foo?slug=en-slug&author=henry'), '->computeUris() computes cache uri including several fields from relations');
 $t->is(resolver(article(array('en', 'fr')), 'foo?slug=%slug%')->computeUris(), array('foo?slug=en-slug', 'foo?slug=fr-slug'), '->computeUris() computes i18n cache uris including field value with multiple language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?sf_culture=en&slug=%slug%')->computeUris(), array('foo?sf_culture=en&slug=en-slug'), '->computeUris() computes i18n cache uris when sf_culture is set to default language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?sf_culture=fr&slug=%slug%')->computeUris(), array('foo?sf_culture=fr&slug=fr-slug'), '->computeUris() computes i18n cache uris when sf_culture is set to another language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?sf_culture=*&slug=%slug%')->computeUris(), array(0 => 'foo?sf_culture=*&slug=en-slug', 1 => 'foo?sf_culture=*&slug=fr-slug'), '->computeUris() computes i18n cache uris when sf_culture is set to any language');
+$t->is(resolver(article(array('en', 'fr')), 'foo?slug=%slug%&author=%Author.name%')->computeUris(), array(0 => 'foo?slug=en-slug&author=henry', 1 => 'foo?slug=fr-slug&author=henry'), '->computeUris() computes cache uri including several fields from relations');
 $t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->computeUris(), array('foo?slug=en-slug'), '->computeUris() computes i18n cache uri with a foreign relation value in default language');
 $t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->computeUris(), array('foo?slug=fr-slug'), '->computeUris() computes i18n cache uri with a foreign relation value in another language');
 $t->is(resolver(comment(array('en', 'fr')), 'foo?slug=%Article.slug%')->computeUris(), array('foo?slug=en-slug', 'foo?slug=fr-slug'), '->computeUris() computes i18n cache uri with a foreign relation value in multiple language');
@@ -64,6 +67,7 @@ $t->is(resolver(comment(array('en', 'fr')), 'foo?slug=%Article.slug%')->computeU
 function article(array $langs = array())
 {
   $article = new Article();
+  $article->setAuthor(author('henry'));
   foreach ($langs as $lang)
   {
     $article->Translation[$lang]->fromArray(array(
