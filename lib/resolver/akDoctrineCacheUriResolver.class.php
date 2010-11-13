@@ -8,14 +8,12 @@
  */
 class akDoctrineCacheUriResolver
 {
-  const CATCH_ALL = '*';
-  
   protected
     $cacheUri        = null,
     $cacheUriCulture = null,
     $placeholders    = array(),
     $record          = null;
-  
+
   public function __construct(Doctrine_Record $record, $cacheUri)
   {
     $this->record = $record;
@@ -23,47 +21,47 @@ class akDoctrineCacheUriResolver
     $this->cacheUriCulture = $this->checkCulture();
     $this->placeholders = $this->checkPlaceholders();
   }
-  
+
   public function checkCulture()
   {
     if (preg_match('/sf_culture=([a-z_]{2,5})/i', $this->cacheUri, $m))
     {
       return $m[1];
     }
-    
+
     return null;
   }
-  
+
   public function checkPlaceholders()
   {
     if (preg_match_all('/%([a-z0-9\._]+)%/si', $this->cacheUri, $m) && count($m[1]))
     {
       return $m[1];
     }
-    
+
     return array();
   }
-  
+
   public function hasTranslation(Doctrine_Record $record, $culture)
   {
     return $record->hasRelation('Translation') && array_key_exists($culture, $record->Translation->toArray());
   }
-  
+
   public function getRelatedFields()
   {
     if (!count($this->placeholders))
     {
       return array();
     }
-    
+
     $relatedFields = array();
-    
+
     foreach ($this->placeholders as $field)
     {
       $element = $field;
-      
+
       $currentRecord = $this->record;
-      
+
       if (strpos($field, '.'))
       {
         foreach (explode('.', $field) as $element)
@@ -72,9 +70,9 @@ class akDoctrineCacheUriResolver
           {
             break;
           }
-          
+
           $relationType = $currentRecord->getTable()->getRelation($element)->getType();
-          
+
           if (Doctrine_Relation::ONE === $relationType)
           {
             $currentRecord = $currentRecord->$element;
@@ -90,13 +88,13 @@ class akDoctrineCacheUriResolver
           }
         }
       }
-      
+
       $relatedFields[$field] = $this->fetchRelatedValues($currentRecord, $element);
     }
-    
+
     return $relatedFields;
   }
-  
+
   public function fetchRelatedValues(Doctrine_Record $record, $property)
   {
     $values = array();
@@ -130,38 +128,45 @@ class akDoctrineCacheUriResolver
     {
       try
       {
-        if ($value = (string) $record->$property)
+        // circumvents a silly Doctrine behavior which may alter the record instance reference
+        // when trying to access some of its properties, so we copy it instead to be safe
+        $copy = $record->copy(false);
+        if ($value = (string) $copy->$property)
         {
           $values[] = $value;
         }
+        unset($copy);
       }
       catch (Exception $e)
       {
+        $values[] = '*';
       }
     }
     
     return array_unique($values);
   }
-  
+
   public function computeUris()
   {
     $computedCacheUris = array();
-    
+
     if (!count($this->placeholders))
     {
       $computedCacheUris[] = $this->cacheUri;
-      
+
       return $computedCacheUris;
     }
+    
+    $newUri = $this->cacheUri;
     
     foreach ($this->getRelatedFields() as $placeholder => $values)
     {
       foreach ($values as $value)
       {
-        $computedCacheUris[] = str_replace(sprintf('%%%s%%', $placeholder), $value, $this->cacheUri);
+        $newUri = str_replace(sprintf('%%%s%%', $placeholder), $value, $newUri);
       }
     }
-    
-    return array_unique($computedCacheUris);
+
+    return array($newUri);
   }
 }
