@@ -16,7 +16,7 @@ Article:
       type: one
       local: author_id
       foreign: id
-      foreignAlias: Comments
+      foreignAlias: Articles
       onDelete: CASCADE
     Comments:
       type: many
@@ -50,6 +50,11 @@ Author:
   columns:
     name: string(255)
   relations:
+    Articles:
+      type: many
+      local: id
+      foreign: author_id
+      onDelete: CASCADE
     Comments:
       type: many
       local: id

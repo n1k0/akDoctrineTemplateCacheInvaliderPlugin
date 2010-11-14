@@ -9,6 +9,7 @@
 class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
 {
   static protected
+    $enabled          = true,
     $processed        = array();
 
   protected
@@ -27,6 +28,16 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
     $this->viewCacheManager = $viewCacheManager;
     $this->configuration = $configuration;
     $this->clearProcessed();
+  }
+
+  static public function enable()
+  {
+    self::$enabled = true;
+  }
+
+  static public function disable()
+  {
+    self::$enabled = false;
   }
 
   public function clearProcessed()
@@ -56,26 +67,39 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
   {
     $this->processEvent($event, true);
   }
-  
+
   public function preDelete(Doctrine_Event $event)
   {
     $this->processEvent($event, false);
   }
-  
+
   public function processEvent(Doctrine_Event $event, $skip = false)
   {
+    if (!self::$enabled)
+    {
+      return;
+    }
+
     $record = $event->getInvoker();
 
-    if (array_key_exists($model = get_class($record), $this->configuration) && !$this->isRecordProcessed($record))
+    if (!array_key_exists(get_class($record), $this->configuration) || $this->isRecordProcessed($record))
     {
-      $this->processCacheInvalidation($record);
+      return;
+    }
 
-      $this->setRecordProcessed($record);
+    // skip cache invalidation if the record has not been touched
+    if (!$record->isModified(true))
+    {
+      return;
+    }
 
-      if (true === $skip)
-      {
-        $event->skipOperation();
-      }
+    $this->processCacheInvalidation($record);
+
+    $this->setRecordProcessed($record);
+
+    if (true === $skip)
+    {
+      $event->skipOperation();
     }
   }
 

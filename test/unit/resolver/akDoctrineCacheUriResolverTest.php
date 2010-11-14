@@ -2,7 +2,7 @@
 include dirname(__FILE__).'/../../bootstrap/functional.php';
 require_once $configuration->getSymfonyLibDir().'/vendor/lime/lime.php';
 
-$t = new lime_test(36, new lime_output_color());
+$t = new lime_test(40, new lime_output_color());
 
 // ->checkCulture()
 $t->diag('->checkCulture()');
@@ -37,8 +37,14 @@ $t->is(resolver(article(array('fr')), 'foo?slug=%slug%')->fetchRelatedValues(art
 $t->is(resolver(comment(array('en')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en')), 'slug'), array('en-slug'), '->fetchRelatedValues() fetches expected related value for default language');
 $t->is(resolver(comment(array('fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('fr')), 'slug'), array('fr-slug'), '->fetchRelatedValues() fetches expected related value for another language');
 $t->is(resolver(article(array('en', 'fr')), 'foo?slug=%Article.slug%')->fetchRelatedValues(article(array('en', 'fr')), 'slug'), array('en-slug', 'fr-slug'), '->fetchRelatedValues() fetches expected value for multiple languages');
-$t->is(resolver(comment(array('en')), 'foo?author=%author.name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a model without i18n behaviour');
+$t->is(resolver(comment(array('en')), 'foo?author=%Author.name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a model without i18n behaviour');
 $t->is(resolver(article(array('en', 'fr')), 'foo?slug=%Article.slug%&author=%Author.name%')->fetchRelatedValues(article(array('en', 'fr')), 'slug'), array('en-slug', 'fr-slug'), '->fetchRelatedValues() fetches multiple expected values for multiple languages');
+$t->is(resolver(author('niko'), 'foo?slug=%name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a flat record');
+$t->is(resolver(author('niko'), 'foo?slug=%blah%')->fetchRelatedValues(author('niko'), 'blah'), array('*'), '->fetchRelatedValues() fallback to starred value on non-existant property');
+# complex hydratation graph
+$niko = Doctrine::getTable('Author')->createQuery('a')->leftJoin('a.Articles ar')->leftJoin('ar.Comments c')->fetchOne();
+$t->is(resolver($niko, 'foo?slug=%name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a flat record');
+$t->is(resolver($niko, 'foo?slug=%blah%')->fetchRelatedValues(author('niko'), 'blah'), array('*'), '->fetchRelatedValues() fallback to starred value on non-existant property');
 
 // ->hasTranslation()
 $t->diag('->hasTranslation()');

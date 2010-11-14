@@ -135,14 +135,14 @@ class akDoctrineCacheUriResolver
         {
           $values[] = $value;
         }
-        unset($copy);
+        $copy->free(true);
       }
       catch (Exception $e)
       {
         $values[] = '*';
       }
     }
-    
+
     return array_unique($values);
   }
 
@@ -160,7 +160,7 @@ class akDoctrineCacheUriResolver
       $computedCacheUris[] = $this->cacheUri;
       return $computedCacheUris;
     }
-    
+
     // generate the combinations
     $patterns = array();
 
@@ -178,7 +178,7 @@ class akDoctrineCacheUriResolver
 
     return array_unique($computedCacheUris);
   }
-  
+
   /**
    * Adds a level of depth in the combinations for each new array of values
    *
@@ -190,9 +190,9 @@ class akDoctrineCacheUriResolver
     $results = array();
     $i = 0;
     //combine each existing combination with all the new values
-    foreach($combinations as $combination) 
+    foreach($combinations as $combination)
     {
-      foreach($values as $value) 
+      foreach($values as $value)
       {
         $results[$i] = is_array($combination) ? $combination : array($combination);
         $results[$i][] = $value;
