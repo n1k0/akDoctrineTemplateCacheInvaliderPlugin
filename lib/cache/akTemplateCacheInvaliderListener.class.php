@@ -87,12 +87,6 @@ class akTemplateCacheInvaliderListener extends Doctrine_Record_Listener
       return;
     }
 
-    // skip cache invalidation if the record has not been touched
-    if (!$record->isModified(true))
-    {
-      return;
-    }
-
     $this->processCacheInvalidation($record);
 
     $this->setRecordProcessed($record);

@@ -97,6 +97,13 @@ class akDoctrineCacheUriResolver
 
   public function fetchRelatedValues(Doctrine_Record $record, $property)
   {
+    if ($record->getTable()->isIdentifier($property))
+    {
+      $value = $record->$property;
+
+      return $value ? array($value) : array();
+    }
+
     $values = array();
     $skipDirectPropertyGet = false;
 

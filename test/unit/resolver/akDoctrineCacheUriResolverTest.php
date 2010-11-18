@@ -2,7 +2,7 @@
 include dirname(__FILE__).'/../../bootstrap/functional.php';
 require_once $configuration->getSymfonyLibDir().'/vendor/lime/lime.php';
 
-$t = new lime_test(40, new lime_output_color());
+$t = new lime_test(42, new lime_output_color());
 
 // ->checkCulture()
 $t->diag('->checkCulture()');
@@ -45,6 +45,17 @@ $t->is(resolver(author('niko'), 'foo?slug=%blah%')->fetchRelatedValues(author('n
 $niko = Doctrine::getTable('Author')->createQuery('a')->leftJoin('a.Articles ar')->leftJoin('ar.Comments c')->fetchOne();
 $t->is(resolver($niko, 'foo?slug=%name%')->fetchRelatedValues(author('niko'), 'name'), array('niko'), '->fetchRelatedValues() fetches expected value for a flat record');
 $t->is(resolver($niko, 'foo?slug=%blah%')->fetchRelatedValues(author('niko'), 'blah'), array('*'), '->fetchRelatedValues() fallback to starred value on non-existant property');
+# pk resolver
+$testArticle = article(array('en'));
+$t->is(resolver($testArticle, 'foo?id=%id%')->fetchRelatedValues($testArticle, 'id'), array(), '->fetchRelatedValues() does not fetch value for PK when record is not saved');
+try {
+  $testArticle->save();
+} catch (Doctrine_Connection_Sqlite_Exception $e) {
+  Doctrine::getTable('Article')->createQuery()->delete(); // I do love my job. Na, just kidding.
+}
+$result = resolver($testArticle, 'foo?id=%id%')->fetchRelatedValues($testArticle, 'id');
+$t->ok(is_numeric(array_pop($result)), '->fetchRelatedValues() fetches value for PK when record is saved');
+$testArticle->delete(); // surprisingly, this won't work, so the "hack" above
 
 // ->hasTranslation()
 $t->diag('->hasTranslation()');
